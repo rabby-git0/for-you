@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Question for You 💕</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #ffe6eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(244, 63, 94, 0.1);
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #d946ef;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .gif-placeholder {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            min-height: 60px;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-yes {
+            background-color: #ec4899;
+            color: white;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-no {
+            background-color: #9ca3af;
+            color: white;
+            position: absolute;
+            z-index: 10;
+        }
+
+        input[type="date"], select {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #fbcfe8;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #4b5563;
+            outline: none;
+        }
+
+        input[type="date"]:focus, select:focus {
+            border-color: #f472b6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- SCREEN 1: THE PROPOSAL -->
+        <div class="screen active" id="screen1">
+            <div class="gif-placeholder">💖</div>
+            <h2>Do you want to go on a date with me?</h2>
+            <div class="btn-container" id="proposal-buttons">
+                <button class="btn-yes" onclick="nextScreen(2)">Yes</button>
+                <button class="btn-no" id="no-button">No</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: PICK A DATE -->
+        <div class="screen" id="screen2">
+            <div class="gif-placeholder">📅</div>
+            <h2>Yay! When are you free?</h2>
+            <input type="date" id="date-picker">
+            <button class="btn-yes" onclick="saveDate()">Next</button>
+        </div>
+
+        <!-- SCREEN 3: PICK FOOD -->
+        <div class="screen" id="screen3">
+            <div class="gif-placeholder">🍕</div>
+            <h2>What kind of food are we getting?</h2>
+            <select id="food-picker">
+                <option value="" disabled selected>Select your craving...</option>
+                <option value="Italian/Pizza">Italian / Pizza 🍕</option>
+                <option value="Sushi/Japanese">Sushi / Japanese 🍣</option>
+                <option value="Burgers/FastFood">Burgers / Comfort Food 🍔</option>
+                <option value="Tacos/Mexican">Tacos / Mexican 🌮</option>
+                <option value="Dessert/Café">Dessert / Cozy Café 🍰</option>
+            </select>
+            <button class="btn-yes" onclick="finishProposal()">Confirm Date! ✨</button>
+        </div>
+
+        <!-- SCREEN 4: SUCCESS -->
+        <div class="screen" id="screen4">
+            <div class="gif-placeholder">🥳🎉</div>
+            <h2>It's a date! ❤️</h2>
+            <p id="summary-text" style="color: #4b5563; line-height: 1.5; font-size: 18px;"></p>
+        </div>
+    </div>
+
+    <script>
+        const noButton = document.getElementById('no-button');
+        const btnContainer = document.getElementById('proposal-buttons');
+        
+        let chosenDate = "";
+
+        // --- THE "RUNNING AWAY" LOGIC ---
+        function moveNoButton() {
+            // Get boundaries of the button container to keep it relatively close but unreachable
+            const containerRect = btnContainer.getBoundingClientRect();
+            const cardRect = document.querySelector('.card').getBoundingClientRect();
+            
+            // Generate a position within the card boundaries so it doesn't escape the screen completely
+            const maxX = cardRect.width - noButton.offsetWidth - 20;
+            const maxY = cardRect.height - noButton.offsetHeight - 20;
+            
+            // Calculate random positions relative to the card container
+            const randomX = Math.floor(Math.random() * maxX) - (cardRect.width / 2) + (noButton.offsetWidth / 2);
+            const randomY = Math.floor(Math.random() * maxY) - (cardRect.height / 2) + (noButton.offsetHeight / 2);
+            
+            noButton.style.left = `${randomX}px`;
+            noButton.style.top = `${randomY}px`;
+        }
+
+        // Works on computers (mouse hover)
+        noButton.addEventListener('mouseover', moveNoButton);
+        // Works on mobile devices (touch screen)
+        noButton.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents clicking accidental touch behavior
+            moveNoButton();
+        });
+
+        // --- NAVIGATION LOGIC ---
+        function nextScreen(screenNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen${screenNum}`).classList.add('active');
+        }
+
+        function saveDate() {
+            const dateInput = document.getElementById('date-picker').value;
+            if (!dateInput) {
+                alert("Please select a date! 😉");
+                return;
+            }
+            chosenDate = dateInput;
+            nextScreen(3);
+        }
+
+        function finishProposal() {
+            const foodInput = document.getElementById('food-picker').value;
+            if (!foodInput) {
+                alert("Please choose a food preference! 😋");
+                return;
+            }
+            
+            // Format the final summary message
+            document.getElementById('summary-text').innerHTML = 
+                `See you on <strong>${chosenDate}</strong>!<br>Get ready for some amazing <strong>${foodInput}</strong>.`;
+            nextScreen(4);
+        }
+    </script>
+</body>
+</html>
